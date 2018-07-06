@@ -74,6 +74,9 @@ export class TemplateSrv {
     if (typeof value === 'string') {
       return luceneEscape(value);
     }
+    if (value instanceof Array && value.length === 0) {
+      return '__empty__';
+    }
     var quotedValues = _.map(value, function(val) {
       return '"' + luceneEscape(val) + '"';
     });
@@ -114,6 +117,12 @@ export class TemplateSrv {
           return value;
         }
         return this.distributeVariable(value, variable.name);
+      }
+      case 'csv': {
+        if (_.isArray(value)) {
+          return value.join(',');
+        }
+        return value;
       }
       default: {
         if (_.isArray(value)) {
@@ -173,16 +182,16 @@ export class TemplateSrv {
       return target;
     }
 
-    var variable, systemValue, value;
+    var variable, systemValue, value, fmt;
     this.regex.lastIndex = 0;
 
     return target.replace(this.regex, (match, var1, var2, fmt2, var3, fmt3) => {
       variable = this.index[var1 || var2 || var3];
-      format = fmt2 || fmt3 || format;
+      fmt = fmt2 || fmt3 || format;
       if (scopedVars) {
         value = scopedVars[var1 || var2 || var3];
         if (value) {
-          return this.formatValue(value.value, format, variable);
+          return this.formatValue(value.value, fmt, variable);
         }
       }
 
@@ -192,19 +201,19 @@ export class TemplateSrv {
 
       systemValue = this.grafanaVariables[variable.current.value];
       if (systemValue) {
-        return this.formatValue(systemValue, format, variable);
+        return this.formatValue(systemValue, fmt, variable);
       }
 
       value = variable.current.value;
       if (this.isAllValue(value)) {
         value = this.getAllValue(variable);
-        // skip formating of custom all values
+        // skip formatting of custom all values
         if (variable.allValue) {
           return value;
         }
       }
 
-      var res = this.formatValue(value, format, variable);
+      var res = this.formatValue(value, fmt, variable);
       return res;
     });
   }

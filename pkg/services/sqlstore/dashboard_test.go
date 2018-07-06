@@ -1,11 +1,11 @@
 package sqlstore
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/go-xorm/xorm"
 	"github.com/grafana/grafana/pkg/components/simplejson"
 	m "github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/search"
@@ -15,10 +15,8 @@ import (
 )
 
 func TestDashboardDataAccess(t *testing.T) {
-	var x *xorm.Engine
-
 	Convey("Testing DB", t, func() {
-		x = InitTestDB(t)
+		InitTestDB(t)
 
 		Convey("Given saved dashboard", func() {
 			savedFolder := insertTestDashboard("1 test dash folder", 1, 0, true, "prod", "webapp")
@@ -107,9 +105,8 @@ func TestDashboardDataAccess(t *testing.T) {
 					timesCalled += 1
 					if timesCalled <= 2 {
 						return savedDash.Uid
-					} else {
-						return util.GenerateShortUid()
 					}
+					return util.GenerateShortUid()
 				}
 				cmd := m.SaveDashboardCommand{
 					OrgId: 1,
@@ -393,7 +390,7 @@ func createUser(name string, role string, isAdmin bool) m.User {
 	setting.AutoAssignOrgRole = role
 
 	currentUserCmd := m.CreateUserCommand{Login: name, Email: name + "@test.com", Name: "a " + name, IsAdmin: isAdmin}
-	err := CreateUser(&currentUserCmd)
+	err := CreateUser(context.Background(), &currentUserCmd)
 	So(err, ShouldBeNil)
 
 	q1 := m.GetUserOrgListQuery{UserId: currentUserCmd.Result.Id}

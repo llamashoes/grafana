@@ -9,9 +9,6 @@ Graphite, Elasticsearch, OpenTSDB, Prometheus and InfluxDB.
 
 ![](http://docs.grafana.org/assets/img/features/dashboard_ex1.png)
 
-## Grafana v5 Alpha Preview
-Grafana master is now v5.0 alpha. This is going to be the biggest and most foundational release Grafana has ever had, coming with a ton of UX improvements, a new dashboard grid engine, dashboard folders, user teams and permissions. Checkout out this [video preview](https://www.youtube.com/watch?v=BC_YRNpqj5k) of Grafana v5.
-
 ## Installation
 Head to [docs.grafana.org](http://docs.grafana.org/installation/) and [download](https://grafana.com/get)
 the latest release.
@@ -27,13 +24,13 @@ the latest master builds [here](https://grafana.com/grafana/download)
 
 ### Dependencies
 
-- Go 1.9
+- Go 1.10
 - NodeJS LTS
 
 ### Building the backend
 ```bash
 go get github.com/grafana/grafana
-cd ~/go/src/github.com/grafana/grafana
+cd $GOPATH/src/github.com/grafana/grafana
 go run build.go setup
 go run build.go build
 ```
@@ -42,11 +39,20 @@ go run build.go build
 
 For this you need nodejs (v.6+).
 
+To build the assets, rebuild on file change, and serve them by Grafana's webserver (http://localhost:3000):
 ```bash
 npm install -g yarn
 yarn install --pure-lockfile
 npm run watch
 ```
+
+Build the assets, rebuild on file change with Hot Module Replacement (HMR), and serve them by webpack-dev-server (http://localhost:3333):
+```bash
+yarn start
+# OR set a theme
+env GRAFANA_THEME=light yarn start
+```
+Note: HMR for Angular is not supported. If you edit files in the Angular part of the app, the whole page will reload.
 
 Run tests 
 ```bash

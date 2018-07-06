@@ -161,9 +161,8 @@ func SearchTeams(query *m.SearchTeamsQuery) error {
 	sql.WriteString(` order by team.name asc`)
 
 	if query.Limit != 0 {
-		sql.WriteString(` limit ? offset ?`)
 		offset := query.Limit * (query.Page - 1)
-		params = append(params, query.Limit, offset)
+		sql.WriteString(dialect.LimitOffset(int64(query.Limit), int64(offset)))
 	}
 
 	if err := x.Sql(sql.String(), params...).Find(&query.Result.Teams); err != nil {
@@ -210,11 +209,7 @@ func GetTeamsByUser(query *m.GetTeamsByUserQuery) error {
 	sess.Where("team.org_id=? and team_member.user_id=?", query.OrgId, query.UserId)
 
 	err := sess.Find(&query.Result)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // AddTeamMember adds a user to a team
@@ -273,7 +268,15 @@ func GetTeamMembers(query *m.GetTeamMembersQuery) error {
 	query.Result = make([]*m.TeamMemberDTO, 0)
 	sess := x.Table("team_member")
 	sess.Join("INNER", "user", fmt.Sprintf("team_member.user_id=%s.id", x.Dialect().Quote("user")))
-	sess.Where("team_member.org_id=? and team_member.team_id=?", query.OrgId, query.TeamId)
+	if query.OrgId != 0 {
+		sess.Where("team_member.org_id=?", query.OrgId)
+	}
+	if query.TeamId != 0 {
+		sess.Where("team_member.team_id=?", query.TeamId)
+	}
+	if query.UserId != 0 {
+		sess.Where("team_member.user_id=?", query.UserId)
+	}
 	sess.Cols("user.org_id", "team_member.team_id", "team_member.user_id", "user.email", "user.login")
 	sess.Asc("user.login", "user.email")
 

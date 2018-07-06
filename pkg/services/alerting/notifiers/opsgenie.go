@@ -41,7 +41,7 @@ func init() {
 }
 
 var (
-	opsgenieAlertURL string = "https://api.opsgenie.com/v2/alerts"
+	opsgenieAlertURL = "https://api.opsgenie.com/v2/alerts"
 )
 
 func NewOpsGenieNotifier(model *m.AlertNotification) (alerting.Notifier, error) {
@@ -70,10 +70,6 @@ type OpsGenieNotifier struct {
 	ApiUrl    string
 	AutoClose bool
 	log       log.Logger
-}
-
-func (this *OpsGenieNotifier) ShouldNotify(context *alerting.EvalContext) bool {
-	return defaultShouldNotify(context)
 }
 
 func (this *OpsGenieNotifier) Notify(evalContext *alerting.EvalContext) error {

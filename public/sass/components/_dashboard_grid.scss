@@ -1,4 +1,4 @@
-@import '~react-grid-layout-grafana/css/styles.css';
+@import '~react-grid-layout/css/styles.css';
 @import '~react-resizable/css/styles.css';
 
 .panel-in-fullscreen {
@@ -17,6 +17,20 @@
     width: 100% !important;
     height: 100% !important;
     transform: translate(0px, 0px) !important;
+  }
+
+  // Disable grid interaction indicators in fullscreen panels
+
+  .panel-header:hover {
+    background-color: inherit;
+  }
+
+  .panel-title-container {
+    cursor: pointer;
+  }
+
+  .react-resizable-handle {
+    display: none;
   }
 }
 
