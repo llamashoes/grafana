@@ -34,13 +34,13 @@ export class DatasourceSrv {
   }
 
   loadDatasource(name) {
-    var dsConfig = config.datasources[name];
+    const dsConfig = config.datasources[name];
     if (!dsConfig) {
       return this.$q.reject({ message: 'Datasource named ' + name + ' was not found' });
     }
 
-    var deferred = this.$q.defer();
-    var pluginDef = dsConfig.meta;
+    const deferred = this.$q.defer();
+    const pluginDef = dsConfig.meta;
 
     importPluginModule(pluginDef.module)
       .then(plugin => {
@@ -55,7 +55,7 @@ export class DatasourceSrv {
           throw new Error('Plugin module is missing Datasource constructor');
         }
 
-        var instance = this.$injector.instantiate(plugin.Datasource, { instanceSettings: dsConfig });
+        const instance = this.$injector.instantiate(plugin.Datasource, { instanceSettings: dsConfig });
         instance.meta = pluginDef;
         instance.name = name;
         this.datasources[name] = instance;
@@ -73,11 +73,11 @@ export class DatasourceSrv {
   }
 
   getAnnotationSources() {
-    var sources = [];
+    const sources = [];
 
     this.addDataSourceVariables(sources);
 
-    _.each(config.datasources, function(value) {
+    _.each(config.datasources, value => {
       if (value.meta && value.meta.annotations) {
         sources.push(value);
       }
@@ -86,10 +86,18 @@ export class DatasourceSrv {
     return sources;
   }
 
-  getMetricSources(options) {
-    var metricSources = [];
+  getExploreSources() {
+    const { datasources } = config;
+    const es = Object.keys(datasources)
+      .map(name => datasources[name])
+      .filter(ds => ds.meta && ds.meta.explore);
+    return _.sortBy(es, ['name']);
+  }
 
-    _.each(config.datasources, function(value, key) {
+  getMetricSources(options) {
+    const metricSources = [];
+
+    _.each(config.datasources, (value, key) => {
       if (value.meta && value.meta.metrics) {
         let metricSource = { value: key, name: key, meta: value.meta, sort: key };
 
@@ -113,7 +121,7 @@ export class DatasourceSrv {
       this.addDataSourceVariables(metricSources);
     }
 
-    metricSources.sort(function(a, b) {
+    metricSources.sort((a, b) => {
       if (a.sort.toLowerCase() > b.sort.toLowerCase()) {
         return 1;
       }
@@ -128,18 +136,18 @@ export class DatasourceSrv {
 
   addDataSourceVariables(list) {
     // look for data source variables
-    for (var i = 0; i < this.templateSrv.variables.length; i++) {
-      var variable = this.templateSrv.variables[i];
+    for (let i = 0; i < this.templateSrv.variables.length; i++) {
+      const variable = this.templateSrv.variables[i];
       if (variable.type !== 'datasource') {
         continue;
       }
 
-      var first = variable.current.value;
+      let first = variable.current.value;
       if (first === 'default') {
         first = config.defaultDatasource;
       }
 
-      var ds = config.datasources[first];
+      const ds = config.datasources[first];
 
       if (ds) {
         const key = `$${variable.name}`;
@@ -155,3 +163,4 @@ export class DatasourceSrv {
 }
 
 coreModule.service('datasourceSrv', DatasourceSrv);
+export default DatasourceSrv;
